@@ -7,7 +7,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
-import java.util.function.Function;
 
 public abstract class Algorithm {
 
@@ -22,6 +21,7 @@ public abstract class Algorithm {
     protected Random random;
     protected ArrayList<Integer> next;
 
+    // do some width/height error checking
     public Maze generate(String width, String height) {
         int h,w;
 
@@ -39,19 +39,57 @@ public abstract class Algorithm {
         return generate(w, h);
     }
 
-    protected void visitRandomAdjacentCell(int row, int column) {
+    /*
+        choose a new random direction to move and take a step.
+        provide the next step with the direction coming from.
+        north: 0
+        east: 1
+        south: 2
+        west: 3
+     */
+    protected void visitRandomAdjacentCell(int currentRow, int currentColumn) {
+        int to = this.random.nextInt(4);
+
+        int newRow = this.newRow(currentRow, to);
+        int newColumn = this.newColumn(currentColumn, to);
+        int from = this.from(to);
+
+        this.step(newRow, newColumn, from);
+    }
+
+    /*
+        randomly move to each direction and take a step.
+        provide the next step with the direction coming from.
+        north: 0
+        east: 1
+        south: 2
+        west: 3
+     */
+    protected void visitRandomAdjacentCells(int currentRow, int currentColumn) {
         Collections.shuffle(this.next);
 
-        for (Integer i : this.next) {
-            int newRow = i == 0 ? row - 1 : i == 2 ? row + 1 : row;
-            int newColumn = i == 1 ? column + 1 : i == 3 ? column - 1 : column;
-            int from = i == 0 ? 1 : i == 1 ? 3 : i == 2 ? 0 : i == 3 ? 1 : -1;
+        for (Integer to : this.next) {
+            int newRow = this.newRow(currentRow, to);
+            int newColumn = this.newColumn(currentColumn, to);
+            int from = this.from(to);
 
-            this.recursiveStep(newRow, newColumn, from);
+            this.step(newRow, newColumn, from);
         }
     }
 
+    protected int newRow(int currentRow, int to) {
+        return to == 0 ? currentRow - 1 : to == 2 ? currentRow + 1 : currentRow;
+    }
+
+    protected int newColumn(int currentColumn, int to) {
+        return to == 1 ? currentColumn + 1 : to == 3 ? currentColumn - 1 : currentColumn;
+    }
+
+    protected int from(int i) {
+        return i == 0 ? 1 : i == 1 ? 3 : i == 2 ? 0 : i == 3 ? 1 : -1;
+    }
+
     protected abstract Maze generate(int width, int height);
-    protected abstract void recursiveStep(int row, int column, int from);
+    protected abstract void step(int row, int column, int from);
 
 }

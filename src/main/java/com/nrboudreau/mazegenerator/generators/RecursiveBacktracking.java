@@ -4,7 +4,6 @@ import com.nrboudreau.mazegenerator.model.Cell;
 import com.nrboudreau.mazegenerator.model.Maze;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Random;
 
 public class RecursiveBacktracking extends Algorithm {
@@ -25,12 +24,13 @@ public class RecursiveBacktracking extends Algorithm {
         int startingRow = random.nextInt(height);
         int startingColumn = random.nextInt(width);
 
-        this.carve(startingRow, startingColumn, -1);
+        this.step(startingRow, startingColumn, -1);
 
         return maze;
     }
 
-    private void carve(int row, int column, int prev) {
+    @Override
+    protected void step(int row, int column, int from) {
         if (row < 0 || column < 0 || row >= this.height || column >= this.width) {
             return;
         }
@@ -43,14 +43,10 @@ public class RecursiveBacktracking extends Algorithm {
 
         cell.visited(true);
 
-        if (prev != -1) {
-            cell.getAdjacent()[prev] = Cell.PASSAGE;
+        if (from != -1) {
+            cell.getAdjacent()[from] = Cell.PASSAGE;
         }
 
-        visitRandomAdjacentCell(row, column);
-    }
-
-    protected void recursiveStep(int row, int column, int from) {
-        this.carve(row, column, from);
+        visitRandomAdjacentCells(row, column);
     }
 }
